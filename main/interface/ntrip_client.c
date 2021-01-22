@@ -124,7 +124,7 @@ static void ntrip_client_task(void *ctx) {
 
         // Read from socket until disconnected
         while (sock != -1 && (len = read(sock, buffer, BUFFER_SIZE)) >= 0) {
-            uart_write(buffer, len);
+            uart_msg(buffer, len);
 
             stream_stats_increment(stream_stats, len, 0);
         }

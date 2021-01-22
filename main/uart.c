@@ -21,12 +21,18 @@
 #include <esp_log.h>
 #include <string.h>
 #include <protocol/nmea.h>
+#include <protocol/mavlink/minimal/mavlink.h>
+#include <protocol/mavlink/mavlink_msg_gps_rtcm_data.h>
 #include <stream_stats.h>
 
 #include "uart.h"
 #include "config.h"
 #include "interface/socket_server.h"
 #include "tasks.h"
+
+#ifndef min
+#define min(a,b) ((a) < (b)) ? (a) : (b)
+#endif
 
 static const char *TAG = "UART";
 
@@ -49,17 +55,21 @@ void uart_unregister_write_handler(esp_event_handler_t event_handler) {
     ESP_ERROR_CHECK(esp_event_handler_unregister(UART_EVENT_WRITE, ESP_EVENT_ANY_ID, event_handler));
 }
 
+static int sequenceId = 0;
 static int uart_port = -1;
+static int uart_encap = 0;
 static bool uart_log_forward = false;
 
 static stream_stats_handle_t stream_stats;
 
+static int uart_write(char *buf, size_t len);
 static void uart_task(void *ctx);
 
 void uart_init() {
     uart_log_forward = config_get_bool1(CONF_ITEM(KEY_CONFIG_UART_LOG_FORWARD));
 
     uart_port = config_get_u8(CONF_ITEM(KEY_CONFIG_UART_NUM));
+    uart_encap = config_get_u8(CONF_ITEM(KEY_CONFIG_UART_ENCAPSULATION));
 
     uart_hw_flowcontrol_t flow_ctrl;
     bool flow_ctrl_rts = config_get_bool1(CONF_ITEM(KEY_CONFIG_UART_FLOW_CTRL_RTS));
@@ -136,7 +146,7 @@ int uart_nmea(const char *fmt, ...) {
     return l;
 }
 
-int uart_write(char *buf, size_t len) {
+static int uart_write(char *buf, size_t len) {
     if (uart_port < 0) return 0;
     if (len == 0) return 0;
 
@@ -148,4 +158,58 @@ int uart_write(char *buf, size_t len) {
     esp_event_post(UART_EVENT_WRITE, len, buf, len, portMAX_DELAY);
 
     return written;
+}
+
+static int send_mavlink_msg(const mavlink_gps_rtcm_data_t *msg) {
+    mavlink_message_t message;
+
+    mavlink_msg_gps_rtcm_data_encode_chan(0 /*mavlinkProtocol->getSystemId()*/,
+                                          0 /*mavlinkProtocol->getComponentId()*/,
+                                          0 /*sharedLink->mavlinkChannel()*/,
+                                          &message,
+                                          msg);
+
+    return uart_write((char*)&message, sizeof(message));
+}
+
+static int uart_mavlink(char *buf, size_t len) {
+    if (uart_port < 0) return 0;
+    if (len == 0) return 0;
+
+    const int maxMessageLength = MAVLINK_MSG_GPS_RTCM_DATA_FIELD_DATA_LEN;
+    mavlink_gps_rtcm_data_t mavlinkRtcmData;
+    memset(&mavlinkRtcmData, 0, sizeof(mavlink_gps_rtcm_data_t));
+
+    if (len < maxMessageLength) {
+            mavlinkRtcmData.len = len;
+            mavlinkRtcmData.flags = (sequenceId & 0x1F) << 3;
+            memcpy(&mavlinkRtcmData.data, buf, len);
+            send_mavlink_msg(&mavlinkRtcmData);
+        } else {
+        // We need to fragment
+
+        uint8_t fragmentId = 0;         // Fragment id indicates the fragment within a set
+        int start = 0;
+        while (start < len) {
+            int length = min(len - start, maxMessageLength);
+            mavlinkRtcmData.flags = 1;                      // LSB set indicates message is fragmented
+            mavlinkRtcmData.flags |= fragmentId++ << 1;     // Next 2 bits are fragment id
+            mavlinkRtcmData.flags |= (sequenceId & 0x1F) << 3;     // Next 5 bits are sequence id
+            mavlinkRtcmData.len = length;
+            memcpy(&mavlinkRtcmData.data, buf + start, length);
+            send_mavlink_msg(&mavlinkRtcmData);
+            start += length;
+        }
+    }
+    ++sequenceId;
+
+    return len;
+}
+
+int uart_msg(char *buf, size_t len) {
+    if (uart_encap == 0) {
+        return uart_write(buf, len);
+    } else {
+        return uart_mavlink(buf, len);
+    }
 }

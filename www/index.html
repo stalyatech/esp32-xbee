@@ -886,7 +886,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="form-row">
+                            <div class="form-row mb-3">
                                 <div class="col-3">
                                     <label class="d-block">Log forward  <small class="text-muted" data-toggle="tooltip" title="If enabled, log messages (normally sent to UART1, and visible on the /log.html page) are forwarded to the main UART, primarily for debugging purposes. This setting can interfere with normal communication over UART0.">?</small></label>
                                     <div class="btn-group btn-group-toggle d-flex" data-toggle="buttons">
@@ -913,6 +913,19 @@
                                 <div class="col">
                                     <label>CTS pin</label>
                                     <input type="number" name="uart_cts_pin" data-disable-if="input[type='checkbox'][name='uart_fc_cts']" class="form-control" placeholder="19" value="19" required>
+                                </div>
+                            </div>
+							<div class="form-row">
+                                <div class="col-5">
+                                    <label class="d-block">Encapsulation</label>
+                                    <div class="btn-group btn-group-toggle d-flex" data-toggle="buttons">
+                                        <label class="btn btn-outline-success">
+                                            <input type="radio" name="uart_encap" value="0" checked> None
+                                        </label>
+                                        <label class="btn btn-outline-warning">
+                                            <input type="radio" name="uart_encap" value="1"> Mavlink
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>

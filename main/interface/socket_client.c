@@ -92,7 +92,7 @@ static void socket_client_task(void *ctx) {
 
         int len;
         while ((len = read(sock, buffer, BUFFER_SIZE)) >= 0) {
-            uart_write(buffer, len);
+            uart_msg(buffer, len);
 
             stream_stats_increment(stream_stats, len, 0);
         }

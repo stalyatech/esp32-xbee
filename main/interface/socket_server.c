@@ -209,7 +209,7 @@ static esp_err_t socket_udp_accept() {
 
         stream_stats_increment(stream_stats, len, 0);
 
-        uart_write(buffer, len);
+        uart_msg(buffer, len);
     }
 
     // Error occurred during receiving
@@ -231,7 +231,7 @@ static void socket_clients_receive(fd_set *socket_set) {
         while ((len = recv(client->socket, buffer, BUFFER_SIZE, MSG_DONTWAIT)) > 0) {
             stream_stats_increment(stream_stats, len, 0);
 
-            uart_write(buffer, len);
+            uart_msg(buffer, len);
         }
 
         // Remove on error

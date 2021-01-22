@@ -99,7 +99,7 @@ void ntrip2_client_task(void *ctx) {
 
         int len;
         while ((len = esp_http_client_read(http, buffer, BUFFER_SIZE)) >= 0) {
-            uart_write(buffer, len);
+            uart_msg(buffer, len);
         }
 
         free(buffer);
