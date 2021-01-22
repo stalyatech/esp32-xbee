@@ -257,6 +257,14 @@ const config_item_t CONFIG_ITEMS[] = {
                 .key = KEY_CONFIG_UART_ENCAPSULATION,
                 .type = CONFIG_ITEM_TYPE_UINT8,
                 .def.uint8 = 0
+        }, {
+                .key = KEY_CONFIG_UART_MAVLINK_SYSID,
+                .type = CONFIG_ITEM_TYPE_UINT8,
+                .def.uint8 = 1
+        }, {
+                .key = KEY_CONFIG_UART_MAVLINK_CHAN,
+                .type = CONFIG_ITEM_TYPE_UINT8,
+                .def.uint8 = 1
         },
 
         // WiFi

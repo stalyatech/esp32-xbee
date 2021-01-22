@@ -927,6 +927,14 @@
                                         </label>
                                     </div>
                                 </div>
+                                <div class="col">
+                                    <label>Mavlink SysId</label>
+                                    <input type="number" name="mavlink_sysid" data-disable-if="input[type='radio'][name='uart_encap']" data-disable-if-condition="[value=0]:checked" class="form-control" placeholder="1" value="1" maxlength="3" min="0" max="255" required>
+                                </div>
+                                <div class="col">
+                                    <label>Mavlink Chan</label>
+                                    <input type="number" name="mavlink_chan" data-disable-if="input[type='radio'][name='uart_encap']" data-disable-if-condition="[value=0]:checked" class="form-control" placeholder="1" value="1" maxlength="3" min="0" max="255" required>
+                                </div>
                             </div>
                         </div>
                     </div>

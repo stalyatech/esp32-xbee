@@ -58,6 +58,8 @@ void uart_unregister_write_handler(esp_event_handler_t event_handler) {
 static int sequenceId = 0;
 static int uart_port = -1;
 static int uart_encap = 0;
+static int mavlink_sysid = 1;
+static int mavlink_chan = 1;
 static bool uart_log_forward = false;
 
 static stream_stats_handle_t stream_stats;
@@ -70,6 +72,8 @@ void uart_init() {
 
     uart_port = config_get_u8(CONF_ITEM(KEY_CONFIG_UART_NUM));
     uart_encap = config_get_u8(CONF_ITEM(KEY_CONFIG_UART_ENCAPSULATION));
+    mavlink_sysid = config_get_u8(CONF_ITEM(KEY_CONFIG_UART_MAVLINK_SYSID));
+    mavlink_chan = config_get_u8(CONF_ITEM(KEY_CONFIG_UART_MAVLINK_CHAN));
 
     uart_hw_flowcontrol_t flow_ctrl;
     bool flow_ctrl_rts = config_get_bool1(CONF_ITEM(KEY_CONFIG_UART_FLOW_CTRL_RTS));
@@ -161,11 +165,11 @@ static int uart_write(char *buf, size_t len) {
 }
 
 static int send_mavlink_msg(const mavlink_gps_rtcm_data_t *msg) {
-    mavlink_message_t message;
+    static mavlink_message_t message;
 
-    mavlink_msg_gps_rtcm_data_encode_chan(0 /*mavlinkProtocol->getSystemId()*/,
-                                          0 /*mavlinkProtocol->getComponentId()*/,
-                                          0 /*sharedLink->mavlinkChannel()*/,
+    mavlink_msg_gps_rtcm_data_encode_chan(mavlink_sysid,
+                                          MAV_COMP_ID_UART_BRIDGE,
+                                          mavlink_chan,
                                           &message,
                                           msg);
 
@@ -177,7 +181,7 @@ static int uart_mavlink(char *buf, size_t len) {
     if (len == 0) return 0;
 
     const int maxMessageLength = MAVLINK_MSG_GPS_RTCM_DATA_FIELD_DATA_LEN;
-    mavlink_gps_rtcm_data_t mavlinkRtcmData;
+    static mavlink_gps_rtcm_data_t mavlinkRtcmData;
     memset(&mavlinkRtcmData, 0, sizeof(mavlink_gps_rtcm_data_t));
 
     if (len < maxMessageLength) {

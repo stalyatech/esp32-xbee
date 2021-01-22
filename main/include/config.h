@@ -120,6 +120,8 @@ typedef struct config_item {
 #define KEY_CONFIG_UART_FLOW_CTRL_CTS "uart_fc_cts"
 #define KEY_CONFIG_UART_LOG_FORWARD "uart_log_fwd"
 #define KEY_CONFIG_UART_ENCAPSULATION "uart_encap"
+#define KEY_CONFIG_UART_MAVLINK_SYSID "mavlink_sysid"
+#define KEY_CONFIG_UART_MAVLINK_CHAN "mavlink_chan"
 
 // WiFi
 #define KEY_CONFIG_WIFI_AP_ACTIVE "w_ap_active"
