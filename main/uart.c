@@ -21,8 +21,8 @@
 #include <esp_log.h>
 #include <string.h>
 #include <protocol/nmea.h>
-#include <protocol/mavlink/minimal/mavlink.h>
-#include <protocol/mavlink/mavlink_msg_gps_rtcm_data.h>
+#include <mavlink.h>
+#include <mavlink_msg_gps_rtcm_data.h>
 #include <stream_stats.h>
 
 #include "uart.h"
@@ -166,6 +166,7 @@ static int uart_write(char *buf, size_t len) {
 
 static int send_mavlink_msg(const mavlink_gps_rtcm_data_t *msg) {
     static mavlink_message_t message;
+    memset(&message, 0, sizeof(message));
 
     mavlink_msg_gps_rtcm_data_encode_chan(mavlink_sysid,
                                           MAV_COMP_ID_UART_BRIDGE,

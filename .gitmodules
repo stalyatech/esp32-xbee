@@ -1,3 +1,6 @@
 [submodule "components/button"]
 	path = components/button
 	url = https://github.com/nebkat/esp32-button.git
+[submodule "components/mavlink/v2.0"]
+	path = components/mavlink/v2.0
+	url = https://github.com/mavlink/c_library_v2.git
