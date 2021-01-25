@@ -3,4 +3,4 @@
 	url = https://github.com/nebkat/esp32-button.git
 [submodule "components/mavlink/v2.0"]
 	path = components/mavlink/v2.0
-	url = https://github.com/mavlink/c_library_v2.git
+	url = https://github.com/stalyatech/c_library_v2.git
